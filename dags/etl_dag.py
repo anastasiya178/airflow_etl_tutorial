@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from airflow.models.dag import DAG
 from airflow.decorators import task
 
-from src.constants import URL, URL_PARAMS, AUTH, CSV_HEADER, CSV_FILENAME
+from src.api_params import URL, URL_PARAMS, AUTH, CSV_HEADER, CSV_FILENAME
 from src.extract_data import get_data, save_to_csv
 
 # Operators; we need this to operate!
@@ -41,8 +41,11 @@ with DAG(
 ) as dag:
     @task(task_id="extract")
     def extract():
+        """ Get data through API request, save it to CSV"""
+        data = get_data(URL, URL_PARAMS, AUTH)
+        file_path = save_to_csv(CSV_HEADER, CSV_FILENAME, data)
 
-        return "Extracted"
+        return file_path
 
     @task(task_id="transform")
     def transform():

@@ -111,3 +111,15 @@ airflow scheduler
 
 
 ```
+
+### XCOM
+Inspired by: 
+https://marclamberti.com/blog/airflow-xcom/
+
+Notice the parameter ti (task instance). 
+Once we access the task instance object, we can call xcom_push.
+
+
+
+### Other things: 
+- debug functions
