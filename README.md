@@ -1,8 +1,11 @@
 # Airflow Tutorial
 
 ## Purpose
+The purpose of this project is to explore Airflow.
 
-## Description
+## Project details
+
+![img.png](etl_dag.png)
 
 ### Airflow installation
 Airflow installation:
@@ -11,55 +14,29 @@ https://airflow.apache.org/docs/apache-airflow/stable/start.html
 
 Recommendations:
 - create a venv before proceeding with airflow installation
-- if airflow was already installed earlier, it might make sense to reinstall
-it using: 
+- if airflow was already installed earlier and you are facing issues with that set-up, it might make 
+sense to reinstall it using: 
 ```
 pip uninstall apache-airflow
 ```
 - create dags under Airflow home (not in a separate python project)
 
-### Sample DAG
-
-I used a very first DAG sample from here:
-https://airflow.apache.org/docs/apache-airflow/stable/tutorial/fundamentals.html
-
-I renamed it to "jay_tutorial".
-
-
-Notes: 
-- I had hard time finding my DAG on the web UI. 
-The DAG name is specified here as "tutorial": 
-``` 
-with DAG(
-    #### this is DAG name which is positional argument called dag_id
-    "tutorial",
-    default_args={...
-  
-) as dag:
-
-   ....
-```
-- If you are able to see your DAG on the web, then once you make any changes, they
-will be automatically displayed in the UI
 
 ### Operators
 BashOperator
-BasOperator output can be see in the logs. 
-In that case it's Tuesday
-
-![img.png](img.png)
+BasOperator output can be seen in the logs.
 
 HTTPOperator
-
 The code examples use the http_default connection which means the requests are sent against httpbin site to perform basic HTTP operations.
 To edit default connection, go to Airflow UI/Admin/Connections and search for http_default.
 
-Options: 
+Other options for using REST API: 
 https://medium.com/towards-data-engineering/airflow-3-ways-to-call-a-rest-api-78181fca6fe8
 
 ### Other notes
-- remove examples: make sure load_examples = False is set in airflow.cfg.
-- HTTP workaround for MAC: 
+####  HTTP workaround for MAC
+I found out that there were troubles using HTTP operator or Python operator with requests
+lib on my Mac. There is an HTTP workaround available for MAC: 
 ```
 # fix for mac machines
 import os
@@ -69,11 +46,8 @@ _get_proxy_settings()
 os.environ['NO_PROXY'] = '*'
 ```
 
-## TODO
-- try different operators (4 examples): Bash, Http, Python...
-
-###NOTES: 
-- restart web server (eg when changing configs: 
+#### MISC NOTES: 
+Web server restart (eg when changing configs): 
 ``` airflow webserver -p 8080 -D ```
 
 #### Change config
@@ -86,10 +60,8 @@ expose_config = True
 #
 
 ```
-- having 2 airflow configs - confusion
 
-
-### Understanding Airflow commands
+#### Understanding Airflow commands
 
 ``` 
 airflow standalone
@@ -112,14 +84,9 @@ airflow scheduler
 
 ```
 
-### XCOM
+#### XCOM
 Inspired by: 
 https://marclamberti.com/blog/airflow-xcom/
 
-Notice the parameter ti (task instance). 
+ti - task instance.
 Once we access the task instance object, we can call xcom_push.
-
-
-
-### Other things: 
-- debug functions
