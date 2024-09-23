@@ -1,55 +1,47 @@
-from datetime import datetime, timedelta
+import pendulum
+from airflow.decorators import dag, task
 
-# The DAG object; we'll need this to instantiate a DAG
-from airflow.models.dag import DAG
-from airflow.decorators import task
-
-from src.constants import URL, URL_PARAMS, AUTH, CSV_HEADER, CSV_FILENAME
+from src.api_params import URL, URL_PARAMS, AUTH, CSV_HEADER, CSV_FILENAME
 from src.extract_data import get_data, save_to_csv
+from src.transform_data import transform_csv
 
-# Operators; we need this to operate!
-with DAG(
-    dag_id="etl_dag",
-    # These args will get passed on to each operator
-    # You can override them on a per-task basis during operator initialization
-    default_args={
-        "depends_on_past": False,
-        "email": ["airflow@example.com"],
-        "email_on_failure": False,
-        "email_on_retry": False,
-        "retries": 1,
-        "retry_delay": timedelta(minutes=5),
-        # 'queue': 'bash_queue',
-        # 'pool': 'backfill',
-        # 'priority_weight': 10,
-        # 'end_date': datetime(2016, 1, 1),
-        # 'wait_for_downstream': False,
-        # 'sla': timedelta(hours=2),
-        # 'execution_timeout': timedelta(seconds=300),
-        # 'on_failure_callback': some_function, # or list of functions
-        # 'on_success_callback': some_other_function, # or list of functions
-        # 'on_retry_callback': another_function, # or list of functions
-        # 'sla_miss_callback': yet_another_function, # or list of functions
-        # 'on_skipped_callback': another_function, #or list of functions
-        # 'trigger_rule': 'all_success'
-    },
-    description="A simple tutorial DAG",
-    schedule=timedelta(days=1),
-    start_date=datetime(2024, 9, 1),
+
+@dag(
+    schedule=None,
+    start_date=pendulum.datetime(2021, 1, 1, tz="UTC"),
     catchup=False,
     tags=["example"],
-) as dag:
+)
+def tutorial_taskflow_api():
     @task(task_id="extract")
     def extract():
+        """ Get data through API request, save it to CSV"""
+        data = get_data(URL, URL_PARAMS, AUTH)
+        file_path = save_to_csv(CSV_HEADER, CSV_FILENAME, data)
 
-        return "Extracted"
+        return file_path
 
     @task(task_id="transform")
-    def transform():
-
+    def transform(fp):
+        """
+        Read file from CSV and apply transformations.
+        """
+        transform_csv(fp)
         return "Transformed"
 
     @task(task_id="load")
-    def transform():
+    def load():
+        """
+        Load data to DB.
+        """
         return "Loaded to DB"
 
+    # define task dependencies
+    data = extract()
+    transformed_data = transform(data)
+    transformed_data >> load()
+
+    # TODO: manage dependencies https://www.astronomer.io/docs/learn/managing-dependencies
+
+
+tutorial_taskflow_api()
